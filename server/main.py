@@ -39,6 +39,9 @@ class Recipe:
     def __init__(self, *args):
         # it is assumed that there isn't going to be blank fields
         # they are at least populated with None
+        # it is also assumed that the database schema *does not change*
+        # update DB_COLUMNS if it does
+        assert len(args) == len(DB_COLUMNS)
 
         for name, value in zip(DB_COLUMNS, args):
             try:
@@ -53,6 +56,17 @@ class Recipe:
     def __repr__(self):
         return str(self.to_json())
 
+def process_recipe_command(command: str) -> List[Recipe]:
+    try:
+        cur = conn.cursor()
+        cur.execute(command)
+        rows = cur.fetchall()
+        return list(map(lambda i: Recipe(*i), rows))
+    except (Exception, psycopg2.Error) as error:
+        print("Error while connecting to PostgreSQL", error)
+    finally:
+        if conn:
+            cur.close()
 
 @app.get("/recipes/")
 def root(
@@ -64,22 +78,12 @@ def root(
     no_peanuts: bool = False,
 ):
     # return random w/query parameters
-    # TODO: put this all in a try-catch-finally to close cursor and connection
-    cur = conn.cursor()
-    select = f"SELECT * FROM RECIPE;"
-    cur.execute(select)
-    rows = cur.fetchall()
-    return list(map(lambda i: Recipe(*i), rows))
+    return process_recipe_command(f"SELECT * FROM RECIPE;")
 
 
 @app.get("/recipes/{item_id}")
 def recipe_by_id(item_id: str):
-    # TODO: put this all in a try-catch-finally to close cursor and connection
-    cur = conn.cursor()
-    select = f"SELECT * FROM RECIPE WHERE id={item_id};"
-    cur.execute(select)
-    rows = cur.fetchall()
-    cur.close()
+    return process_recipe_command(f"SELECT * FROM RECIPE WHERE id={item_id};")
 
 
 if __name__ == "__main__":
