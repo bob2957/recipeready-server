@@ -1,7 +1,6 @@
 import random
 import json
-import traceback
-
+from walmart_scraper import WalmartScraper, GroceryItem
 import requests
 from recipe_scrapers import scrape_me
 
@@ -11,28 +10,25 @@ parsed_recipes = []
 parsed_recipes_file = "parsed.txt"
 recipe_id = -1
 empty_img = "https://images.media-allrecipes.com/images/79591.png"
-key_file = "keys.json"
+key_file = "../keys.json"
 app_id = ""
 app_key = ""
 
 
 def ini():
-    global app_id, app_key
+    global app_id, app_key, parsed_recipes
     with open(key_file, "r") as File:
         keys = json.loads(File.read())
     app_id = keys["app_id"]
     app_key = keys["app_key"]
+    with open(parsed_recipes_file, "w+") as File:
+        for i in File:
+            parsed_recipes.append(int(i))
 
 
 def get_ingredients_details(ingredients):
     payload = {
-        "ingr": ['1 pound uncooked spaghetti',
-                 '6 cloves garlic, thinly sliced',
-                 '½ cup olive oil',
-                 '¼ teaspoon red pepper flakes, or to taste',
-                 'salt and freshly ground black pepper to taste',
-                 '¼ cup chopped fresh Italian parsley',
-                 '1 cup finely grated Parmigiano-Reggiano cheese']
+        "ingr": ingredients
     }
     print("Making request...")
     r = requests.post(f"https://api.edamam.com/api/nutrition-details?app_id={app_id}&app_key={app_key}",
@@ -47,15 +43,22 @@ def get_ingredients_details(ingredients):
 def parse_ingredients(ingredients):
     # TODO: add prices and image
     parsed_ingredients = {}
+    sc = WalmartScraper()
     for i in ingredients["ingredients"]:
         i = i["parsed"][0]
+        print("Scraping walmart website...")
+        item: GroceryItem = sc.query(i["foodMatch"])
         if "measure" not in i:
             i["quantity"] = "null"
             i["measure"] = "null"
         parsed_ingredients[i["foodMatch"]] = {
             "quantity": i["quantity"],
             "unit": i["measure"],
-            "calories": i["nutrients"]["ENERC_KCAL"]["quantity"]
+            "calories": i["nutrients"]["ENERC_KCAL"]["quantity"],
+            "price": item.price,
+            "price_per_unit": item.price_per_unit,
+            "description": item.description,
+            "image": item.image_url
         }
     return parsed_ingredients
 
@@ -71,10 +74,11 @@ def convert_to_json(scraper):
     recipe_details = {
         "imglink": image,
         "name": scraper.title(),
-        "prep_time": scraper.total_time() if scraper.total_time != 0 else 'null',
+        "preptime": scraper.total_time() if scraper.total_time != 0 else 'null',
         "ingredients": parse_ingredients(ingredients_details),
-        "servings": int(scraper.yields().split(" ")[0]),
-        "link": "https://www.allrecipes.com/recipe/" + str(recipe_id),
+        "steps": scraper.instructions(),
+        "yield": int(scraper.yields().split(" ")[0]),
+        "source": "https://www.allrecipes.com/recipe/" + str(recipe_id),
         "nutrients": scraper.nutrients(),
         "vegan": "VEGAN" in ingredients_details["healthLabels"],
         "vegetarian": "VEGETARIAN" in ingredients_details["healthLabels"],
@@ -91,21 +95,20 @@ if __name__ == "__main__":
     ini()
     # gets a valid recipe that is not used already
     while 1:
-        try:
-            recipe_id = random.randint(start_id, end_id)
-            if recipe_id not in parsed_recipes:
-                scraper = scrape_me("https://www.allrecipes.com/recipe/" + str(recipe_id))
-                print("Recipe found " + str(recipe_id))
-                scraper.title()  # runs a check to see if the page is not empty
-                data = convert_to_json(scraper)
-                with (open("data.json", "w")) as file:
-                    file.write(data)
-                parsed_recipes.append(recipe_id)
-                print(f"Valid recipe {recipe_id}, sending to db...")
-                with (open(parsed_recipes_file, "a")) as file:
-                    print(f"Writing to {parsed_recipes_file}...")
-                    for line in parsed_recipes:
-                        file.write(str(line))
-                break
-        except TypeError as err:
+        recipe_id = 277448  # random.randint(start_id, end_id)
+        if recipe_id not in parsed_recipes:
+            scraper = scrape_me("https://www.allrecipes.com/recipe/" + str(recipe_id))
+            print("Recipe found " + str(recipe_id))
+            # runs a check to see if the page is not empty
+            if scraper.title() is None:
+                continue
+            data = convert_to_json(scraper)
+            with (open("../data.json", "w")) as file:
+                file.write(data)
             parsed_recipes.append(recipe_id)
+            print(f"Valid recipe {recipe_id}, sending to db...")
+            with (open(parsed_recipes_file, "a")) as file:
+                print(f"Writing to {parsed_recipes_file}...")
+                for line in parsed_recipes:
+                    file.write(str(line))
+            break
