@@ -1,0 +1,3 @@
+[Server]
+DatabaseUrl=postgresql://postgresql:postgresql@sql.com:12345
+DatabaseTable=RECIPE
