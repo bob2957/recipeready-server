@@ -25,7 +25,7 @@ class GroceryItem():
 
 
 class WalmartScraper():
-    def __init__(self, headless: bool = False, chromedriver_path: str = "/usr/bin/chromedriver", debug_log: bool = False):
+    def __init__(self, headless: bool = False, debug_log: bool = False):
         if debug_log:
             log.setLevel(logging.DEBUG)
         log.debug("Initialising web engine")
@@ -37,7 +37,7 @@ class WalmartScraper():
             options.add_argument(
                 "--user-agent=\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36\"")
         self.driver = uc.Chrome(
-            options=options, executable_path=chromedriver_path)
+            options=options)
         self.driver.get("https://walmart.ca/cp/grocery")
         log.info("Ready to serve grocery queries")
 
