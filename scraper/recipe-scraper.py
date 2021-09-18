@@ -105,7 +105,7 @@ if __name__ == "__main__":
             # runs a check to see if the page is not empty
             try:
                 if scraper.title() is None:
-                continue
+                    continue
             except TypeError:
                 print("Skipping")
             print("Recipe found " + str(recipe_id))
