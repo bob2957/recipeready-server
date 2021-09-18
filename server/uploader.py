@@ -58,6 +58,7 @@ class Uploader:
         try:
             cur = self.conn.cursor()
             cur.execute(command)
+            self.conn.commit()
             print(f"Successfully executed command")
         except psycopg2.Error as err:
             print(f"An error occurred: {err}")
