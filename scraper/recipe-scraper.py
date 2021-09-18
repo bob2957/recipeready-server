@@ -44,7 +44,6 @@ def get_ingredients_details(ingredients):
 
 
 def parse_ingredients(ingredients):
-    # TODO: add prices and image
     parsed_ingredients = {}
     sc = WalmartScraper()
     for i in ingredients["ingredients"]:
