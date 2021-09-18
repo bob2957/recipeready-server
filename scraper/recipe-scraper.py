@@ -102,13 +102,13 @@ if __name__ == "__main__":
         recipe_id = random.randint(start_id, end_id)
         if recipe_id not in parsed_recipes:
             scraper = scrape_me("https://www.allrecipes.com/recipe/" + str(recipe_id))
-            print("Recipe found " + str(recipe_id))
             # runs a check to see if the page is not empty
             try:
                 if scraper.title() is None:
-                    continue
-            except TypeError as err:
-                print("No idea what happened but you should never get here", err)
+                continue
+            except TypeError:
+                print("Skipping")
+            print("Recipe found " + str(recipe_id))
 
             data = convert_to_json(scraper)
             parsed_recipes.append(recipe_id)
