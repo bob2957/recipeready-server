@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from typing import List
+from typing import List, Optional
 import undetected_chromedriver.v2 as uc
 import logging
 
@@ -12,13 +12,14 @@ log.addHandler(log_handler)
 
 
 class GroceryItem():
-    __slots__ = ["name", "price", "price_per_unit", "description"]
+    __slots__ = ["name", "price", "price_per_unit", "description", "image_url"]
 
-    def __init__(self, name: str, price: float, price_per_unit: str, description: str):
+    def __init__(self, name: str, price: float, price_per_unit: str, description: str, image_url: Optional[str] = None):
         self.name = name
         self.price = price
         self.price_per_unit = price_per_unit
         self.description = description
+        self.image_url = image_url
 
     def __repr__(self) -> str:
         return f"{self.name} - ${self.price} ({self.price_per_unit} - {self.description})"
@@ -43,9 +44,9 @@ class WalmartScraper():
 
     def query(self, query: str) -> GroceryItem:
         log.debug(f"Searching for {query}")
-        result: GroceryItem = next(self.query_ten(query), -1)
-        if result != -1:
-            return result
+        result: GroceryItem = self.query_ten(query)
+        if len(result) > 0:
+            return result[0]
         raise IndexError(f"No items found for query {query}")
 
     def query_ten(self, query: str) -> List[GroceryItem]:
@@ -60,6 +61,7 @@ class WalmartScraper():
                 price: e.querySelector('[data-automation="current-price"]').innerText,
                 pricePerUnit: e.querySelectorAll('[data-automation="price-per-unit"]')[1]?.innerText,
                 description: e.querySelector('[data-automation="description"]')?.innerText,
+                imageUrl: e.querySelector('[data-automation="image"]')?.src
             }
         });
         """)
@@ -68,7 +70,7 @@ class WalmartScraper():
             # cents vs dollars
             processed_price = float(i["price"][1:]) if "$" in i["price"] else (float(i["price"][:-1]) / 100)
             groceries.append(GroceryItem(
-                name=i["name"], price=processed_price, price_per_unit=i["pricePerUnit"], description=i["description"]))
+                name=i["name"], price=processed_price, price_per_unit=i["pricePerUnit"], description=i["description"], image_url=i["imageUrl"]))
         log.debug(f"Found at least {len(groceries)} results")
         return groceries
 
@@ -79,5 +81,5 @@ class WalmartScraper():
 if __name__ == "__main__":
     # test version
     scraper = WalmartScraper(debug_log=True)
-    scraper.query_ten("apple")
+    print(scraper.query("apple").image_url)
     scraper.exit()
