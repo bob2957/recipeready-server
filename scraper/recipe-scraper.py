@@ -95,7 +95,7 @@ if __name__ == "__main__":
     ini()
     # gets a valid recipe that is not used already
     while 1:
-        recipe_id = 277448  # random.randint(start_id, end_id)
+        recipe_id = random.randint(start_id, end_id)
         if recipe_id not in parsed_recipes:
             scraper = scrape_me("https://www.allrecipes.com/recipe/" + str(recipe_id))
             print("Recipe found " + str(recipe_id))
