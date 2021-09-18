@@ -52,7 +52,10 @@ def get_ingredients_details(ingredients):
 
 def standardize(quantity, unit):
     ureg = pint.UnitRegistry(system='SI')
-    q = int(quantity) * getattr(ureg, unit)
+    try:
+        q = int(quantity) * getattr(ureg, unit)
+    except pint.errors.UndefinedUnitError:
+        return [quantity, unit]
     for u in standard_units:
         if q.dimensionality.check(getattr(ureg, u).dimensionality):
             q.ito(u)
