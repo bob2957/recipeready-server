@@ -47,7 +47,7 @@ class Recipe:
 
         for name, value in zip(DB_COLUMNS, args):
             try:
-                self.__setattr__(name[0], name[1](value))
+                self.__setattr__(name[0], name[1](value) if value != None else None)
             except (TypeError, JSONDecodeError):
                 # likely a conversion error from None
                 self.__setattr__(name[0], None)
