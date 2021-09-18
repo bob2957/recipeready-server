@@ -62,7 +62,7 @@ def process_recipe_command(command: str) -> List[Recipe]:
         cur.execute(command)
         rows = cur.fetchall()
         return list(map(lambda i: Recipe(*i), rows))
-    except (Exception, psycopg2.Error) as error:
+    except (psycopg2.Error) as error:
         print("Error while connecting to PostgreSQL", error)
     finally:
         if conn:
