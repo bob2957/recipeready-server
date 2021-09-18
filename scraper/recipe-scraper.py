@@ -1,8 +1,11 @@
 import random
 import json
+import sys
+
 from walmart_scraper import WalmartScraper, GroceryItem
 import requests
 from recipe_scrapers import scrape_me
+from server.uploader import Uploader
 
 start_id = 500
 end_id = int(1e6 - 1)
@@ -49,8 +52,8 @@ def parse_ingredients(ingredients):
         print("Scraping walmart website...")
         item: GroceryItem = sc.query(i["foodMatch"])
         if "measure" not in i:
-            i["quantity"] = "null"
-            i["measure"] = "null"
+            i["quantity"] = None
+            i["measure"] = None
         parsed_ingredients[i["foodMatch"]] = {
             "quantity": i["quantity"],
             "unit": i["measure"],
@@ -68,13 +71,13 @@ def convert_to_json(scraper):
     parse_ingredients(ingredients_details)
     print("Creating JSON object...")
     try:
-        image = scraper.image() if scraper.image() != empty_img else 'null'
+        image = scraper.image() if scraper.image() != empty_img else None
     except AttributeError:
-        image = 'null'
+        image = None
     recipe_details = {
         "imglink": image,
         "name": scraper.title(),
-        "preptime": scraper.total_time() if scraper.total_time != 0 else 'null',
+        "preptime": scraper.total_time() if scraper.total_time != 0 else None,
         "ingredients": parse_ingredients(ingredients_details),
         "steps": scraper.instructions(),
         "yield": int(scraper.yields().split(" ")[0]),
@@ -88,11 +91,12 @@ def convert_to_json(scraper):
         "halal": "PORK_FREE" in ingredients_details["healthLabels"]
     }
     print("Created JSON object")
-    return json.dumps(recipe_details, indent=4)
+    return recipe_details
 
 
 if __name__ == "__main__":
     ini()
+    up = Uploader()
     # gets a valid recipe that is not used already
     while 1:
         recipe_id = random.randint(start_id, end_id)
@@ -102,11 +106,12 @@ if __name__ == "__main__":
             # runs a check to see if the page is not empty
             if scraper.title() is None:
                 continue
+
             data = convert_to_json(scraper)
-            with (open("../data.json", "w")) as file:
-                file.write(data)
             parsed_recipes.append(recipe_id)
             print(f"Valid recipe {recipe_id}, sending to db...")
+            up.push(data)
+
             with (open(parsed_recipes_file, "a")) as file:
                 print(f"Writing to {parsed_recipes_file}...")
                 for line in parsed_recipes:
