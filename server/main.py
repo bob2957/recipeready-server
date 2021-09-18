@@ -95,13 +95,20 @@ def root(
 
     # this relies on the idea that False means anything is allowed
     # but True imposes a restriction
-    filter_results = " AND ".join(map(lambda i: f"{i[0]}={str(i[1]).lower()}", filter(lambda i: i[1], extra_parameters.items())))
+    filter_results = " AND ".join(
+        map(
+            lambda i: f"{i[0]}={str(i[1]).lower()}",
+            filter(lambda i: i[1], extra_parameters.items()),
+        )
+    )
 
     if len(filter_results) > 0:
         # :(
         filter_results = f"WHERE {filter_results}"
 
-    return process_recipe_command(" ".join((select_query, filter_results, select_query2, ";")))
+    return process_recipe_command(
+        " ".join((select_query, filter_results, select_query2, ";"))
+    )
 
 
 @app.get("/recipes/{item_id}")
