@@ -11,6 +11,7 @@ from typing import List
 config = configparser.RawConfigParser()
 config.read("config.ini")
 db_url = config["Server"].get("DatabaseUrl")
+table_name = config["Server"].get("DatabaseTable", fallback="RECIPE")
 
 conn = psycopg2.connect(dsn=db_url)
 app = FastAPI()
@@ -90,7 +91,7 @@ def root(
         "peanutfree": no_peanuts,
     }
 
-    select_query = "SELECT * FROM RECIPE WHERE id in (SELECT id FROM RECIPE"
+    select_query = f"SELECT * FROM {table_name} WHERE id in (SELECT id FROM {table_name}"
     select_query2 = f"ORDER BY RANDOM() LIMIT {limit})"
 
     # this relies on the idea that False means anything is allowed
@@ -113,7 +114,7 @@ def root(
 
 @app.get("/recipes/{item_id}")
 def recipe_by_id(item_id: str):
-    return process_recipe_command(f"SELECT * FROM RECIPE WHERE id={item_id};")
+    return process_recipe_command(f"SELECT * FROM {table_name} WHERE id={item_id};")
 
 
 if __name__ == "__main__":
