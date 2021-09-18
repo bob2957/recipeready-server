@@ -1,6 +1,7 @@
 import json
 import random
 
+import pint
 import requests
 from recipe_scrapers import scrape_me
 
@@ -17,6 +18,12 @@ key_file = "../keys.json"
 app_id = ""
 app_key = ""
 
+standard_units = [
+    "gram",
+    "centimeter",
+    "milliliter",
+    "square centimeter"
+]
 
 def ini():
     global app_id, app_key, parsed_recipes
@@ -43,6 +50,19 @@ def get_ingredients_details(ingredients):
     return r.json()
 
 
+def standardize(quantity, unit):
+    ureg = pint.UnitRegistry(system='SI')
+    try:
+        q = int(quantity) * getattr(ureg, unit)
+    except pint.errors.UndefinedUnitError:
+        return [quantity, unit]
+    for u in standard_units:
+        if q.check(getattr(ureg, u)):
+            q.ito(u)
+            break
+    return [q.magnitude, str(q.units)]
+
+
 def parse_ingredients(ingredients):
     parsed_ingredients = {}
     sc = WalmartScraper()
@@ -50,12 +70,14 @@ def parse_ingredients(ingredients):
         i = i["parsed"][0]
         print("Scraping walmart website...")
         item: GroceryItem = sc.query(i["foodMatch"])
+        amount = []
         if "measure" not in i:
-            i["quantity"] = None
-            i["measure"] = None
+            amount = [None, None]
+        else:
+            amount = standardize(i["quantity"], i["measure"])
         parsed_ingredients[i["foodMatch"]] = {
-            "quantity": i["quantity"],
-            "unit": i["measure"],
+            "quantity": amount[0],
+            "unit": amount[1],
             "calories": i["nutrients"]["ENERC_KCAL"]["quantity"],
             "price": item.price,
             "price_per_unit": item.price_per_unit,
