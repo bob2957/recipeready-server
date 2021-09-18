@@ -90,7 +90,8 @@ def root(
         "peanutfree": no_peanuts,
     }
 
-    select_query = "SELECT * FROM RECIPE"
+    select_query = "SELECT * FROM RECIPE WHERE id in (SELECT id FROM RECIPE"
+    select_query2 = f"ORDER BY RANDOM() LIMIT {limit})"
 
     # this relies on the idea that False means anything is allowed
     # but True imposes a restriction
@@ -100,7 +101,7 @@ def root(
         # :(
         filter_results = f"WHERE {filter_results}"
 
-    return process_recipe_command(" ".join((select_query, filter_results)))
+    return process_recipe_command(" ".join((select_query, filter_results, select_query2, ";")))
 
 
 @app.get("/recipes/{item_id}")
