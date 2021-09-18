@@ -72,7 +72,9 @@ class WalmartScraper():
             groceries.append(GroceryItem(
                 name=i["name"], price=processed_price, price_per_unit=i["pricePerUnit"], description=i["description"], image_url=i["imageUrl"]))
         log.debug(f"Found at least {len(groceries)} results")
-        return groceries
+        if len(groceries) > 0:
+            return groceries
+        raise IndexError(f"No items found for query {query}")
 
     def exit(self):
         self.driver.close()
