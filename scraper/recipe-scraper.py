@@ -1,11 +1,11 @@
-import random
 import json
-import sys
+import random
 
-from walmart_scraper import WalmartScraper, GroceryItem
 import requests
 from recipe_scrapers import scrape_me
+
 from uploader import Uploader
+from walmart_scraper import WalmartScraper, GroceryItem
 
 start_id = 500
 end_id = int(1e6 - 1)
