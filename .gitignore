@@ -1,5 +1,7 @@
 # ignore config files
 config.ini
+data.json
+keys.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

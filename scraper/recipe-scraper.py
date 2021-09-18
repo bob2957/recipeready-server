@@ -5,7 +5,7 @@ import sys
 from walmart_scraper import WalmartScraper, GroceryItem
 import requests
 from recipe_scrapers import scrape_me
-from server.uploader import Uploader
+from uploader import Uploader
 
 start_id = 500
 end_id = int(1e6 - 1)
@@ -104,8 +104,11 @@ if __name__ == "__main__":
             scraper = scrape_me("https://www.allrecipes.com/recipe/" + str(recipe_id))
             print("Recipe found " + str(recipe_id))
             # runs a check to see if the page is not empty
-            if scraper.title() is None:
-                continue
+            try:
+                if scraper.title() is None:
+                    continue
+            except TypeError as err:
+                print("No idea what happened but you should never get here", err)
 
             data = convert_to_json(scraper)
             parsed_recipes.append(recipe_id)

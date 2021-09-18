@@ -58,7 +58,7 @@ class WalmartScraper():
         return products.map((e) => {
             return {
                 name: e.querySelector('[data-automation="name"]').innerText,
-                price: e.querySelector('[data-automation="current-price"]').innerText,
+                price: e.querySelector('[data-automation="current-price"]')?.innerText,
                 pricePerUnit: e.querySelectorAll('[data-automation="price-per-unit"]')[1]?.innerText,
                 description: e.querySelector('[data-automation="description"]')?.innerText,
                 imageUrl: e.querySelector('[data-automation="image"]')?.src
