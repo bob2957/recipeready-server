@@ -57,7 +57,7 @@ def standardize(quantity, unit):
     except pint.errors.UndefinedUnitError:
         return [quantity, unit]
     for u in standard_units:
-        if q.dimensionality.check(getattr(ureg, u).dimensionality):
+        if q.check(getattr(ureg, u)):
             q.ito(u)
             break
     return [q.magnitude, str(q.units)]
