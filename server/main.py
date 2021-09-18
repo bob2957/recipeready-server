@@ -31,6 +31,7 @@ DB_COLUMNS = [
     ("halal", bool),
     ("treenut_free", bool),
     ("peanut_free", bool),
+    ("dairy_free", bool)
 ]
 
 
@@ -80,6 +81,7 @@ def root(
     halal: bool = False,
     no_tree_nuts: bool = False,
     no_peanuts: bool = False,
+    no_dairy: bool = False
 ):
     # return random w/query parameters
     # aiya
@@ -89,6 +91,7 @@ def root(
         "halal": halal,
         "treenutfree": no_tree_nuts,
         "peanutfree": no_peanuts,
+        "dairyfree": no_dairy
     }
 
     select_query = f"SELECT * FROM {table_name} WHERE id in (SELECT id FROM {table_name}"
