@@ -108,6 +108,7 @@ if __name__ == "__main__":
                     continue
             except TypeError:
                 print("Skipping")
+                continue
             print("Recipe found " + str(recipe_id))
 
             data = convert_to_json(scraper)
