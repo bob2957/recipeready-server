@@ -13,6 +13,8 @@ json_read = config["Server"].get("JsonFile", fallback=False)
 class Uploader:
     def __init__(self):
         self.json: dict = json.load(json_read) if json_read else None
+        if self.json:
+            print(f"Loaded {json_read}")
         self.conn = psycopg2.connect(dsn=db_url)
 
     def push(self, json: Optional[dict] = None):
