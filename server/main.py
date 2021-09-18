@@ -29,7 +29,7 @@ DB_COLUMNS = [
     ("vegetarian", bool),
     ("halal", bool),
     ("treenut_free", bool),
-    ("peanut_free", bool)
+    ("peanut_free", bool),
 ]
 
 
@@ -50,13 +50,15 @@ class Recipe:
                 # likely a conversion error from None
                 self.__setattr__(name[0], None)
 
-    def to_json(self):
-        return {i: getattr(self, i) for i in self.__slots__}
+    def __iter__(self):
+        return ((i, self.__getattribute__(i)) for i in self.__slots__)
 
     def __repr__(self):
-        return str(self.to_json())
+        return str(dict(self))
+
 
 def process_recipe_command(command: str) -> List[Recipe]:
+    print(f"Running command {command}")
     try:
         cur = conn.cursor()
         cur.execute(command)
@@ -68,6 +70,7 @@ def process_recipe_command(command: str) -> List[Recipe]:
         if conn:
             cur.close()
 
+
 @app.get("/recipes/")
 def root(
     limit: int = 14,
@@ -78,7 +81,26 @@ def root(
     no_peanuts: bool = False,
 ):
     # return random w/query parameters
-    return process_recipe_command(f"SELECT * FROM RECIPE;")
+    # aiya
+    extra_parameters = {
+        "vegan": vegan,
+        "vegetarian": vegetarian,
+        "halal": halal,
+        "treenutfree": no_tree_nuts,
+        "peanutfree": no_peanuts,
+    }
+
+    select_query = "SELECT * FROM RECIPE"
+
+    # this relies on the idea that False means anything is allowed
+    # but True imposes a restriction
+    filter_results = " AND ".join(map(lambda i: f"{i[0]}={str(i[1]).lower()}", filter(lambda i: i[1], extra_parameters.items())))
+
+    if len(filter_results) > 0:
+        # :(
+        filter_results = f"WHERE {filter_results}"
+
+    return process_recipe_command(" ".join((select_query, filter_results)))
 
 
 @app.get("/recipes/{item_id}")
