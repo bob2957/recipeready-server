@@ -8,12 +8,12 @@ from recipe_scrapers import scrape_me
 from uploader import Uploader
 from walmart_scraper import WalmartScraper, GroceryItem
 
-start_id = 1_020_000
-end_id = 1_030_000
+start_id = 9
+end_id = int(1e6 - 1)
 parsed_recipes = []
 parsed_recipes_file = "parsed.txt"
 recipe_id = -1
-empty_img = "https://images.media-allrecipes.com/images/79591.png"
+empty_img = "https://static01.nyt.com/applications/cooking/d8ae0eb/assets/"
 key_file = "../keys.json"
 app_id = ""
 app_key = ""
@@ -60,7 +60,8 @@ def standardize(quantity, unit):
         if q.check(getattr(ureg, u)):
             q.ito(u)
             break
-    return [q.magnitude, str(q.units)]
+    # noinspection PyStringFormat
+    return ('{:~P}'.format(q)).split(" ")
 
 
 def parse_ingredients(ingredients):
@@ -68,9 +69,8 @@ def parse_ingredients(ingredients):
     sc = WalmartScraper()
     for i in ingredients["ingredients"]:
         i = i["parsed"][0]
-        print("Scraping walmart website...")
+        print("Scraping walmart.ca/cp/groceries...")
         item: GroceryItem = sc.query(i["foodMatch"])
-        amount = []
         if "measure" not in i:
             amount = [None, None]
         else:
@@ -92,7 +92,7 @@ def convert_to_json(scraper):
     parse_ingredients(ingredients_details)
     print("Creating JSON object...")
     try:
-        image = scraper.image() if scraper.image() != empty_img else None
+        image = scraper.image() if empty_img in scraper.image() else None
     except AttributeError:
         image = None
     recipe_details = {
