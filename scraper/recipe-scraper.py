@@ -92,7 +92,7 @@ def convert_to_json(scraper):
     parse_ingredients(ingredients_details)
     print("Creating JSON object...")
     try:
-        image = scraper.image() if empty_img in scraper.image() else None
+        image = scraper.image()
     except AttributeError:
         image = None
     recipe_details = {
