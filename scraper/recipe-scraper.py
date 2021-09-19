@@ -76,7 +76,7 @@ def parse_ingredients(ingredients):
         else:
             amount = standardize(i["quantity"], i["measure"])
         parsed_ingredients[i["foodMatch"]] = {
-            "quantity": amount[0],
+            "quantity": None if amount[0] is None else int(amount[0]),
             "unit": amount[1],
             "calories": i["nutrients"]["ENERC_KCAL"]["quantity"],
             "price": item.price,
