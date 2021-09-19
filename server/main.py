@@ -13,7 +13,6 @@ config.read("config.ini")
 db_url = config["Server"].get("DatabaseUrl")
 table_name = config["Server"].get("DatabaseTable", fallback="RECIPE")
 
-conn = psycopg2.connect(dsn=db_url)
 app = FastAPI()
 
 DB_COLUMNS = [
@@ -62,6 +61,7 @@ class Recipe:
 def process_recipe_command(command: str) -> List[Recipe]:
     print(f"Running command {command}")
     try:
+        conn = psycopg2.connect(dsn=db_url)
         cur = conn.cursor()
         cur.execute(command)
         rows = cur.fetchall()
@@ -71,6 +71,7 @@ def process_recipe_command(command: str) -> List[Recipe]:
     finally:
         if conn:
             cur.close()
+            conn.close()
 
 
 @app.get("/recipes/")
