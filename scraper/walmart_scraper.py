@@ -68,7 +68,10 @@ class WalmartScraper():
         groceries = []
         for i in results:
             # cents vs dollars
-            processed_price = float(i["price"][1:]) if "$" in i["price"] else (float(i["price"][:-1]) / 100)
+            if i["price"]:
+                processed_price = float(i["price"][1:]) if "$" in i["price"] else (float(i["price"][:-1]) / 100)
+            else:
+                processed_price = 0.0
             groceries.append(GroceryItem(
                 name=i["name"], price=processed_price, price_per_unit=i["pricePerUnit"], description=i["description"], image_url=i["imageUrl"]))
         log.debug(f"Found at least {len(groceries)} results")
