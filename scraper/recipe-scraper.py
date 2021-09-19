@@ -8,8 +8,8 @@ from recipe_scrapers import scrape_me
 from uploader import Uploader
 from walmart_scraper import WalmartScraper, GroceryItem
 
-start_id = 9
-end_id = int(1e6 - 1)
+start_id = 1020000
+end_id = 1030000
 parsed_recipes = []
 parsed_recipes_file = "parsed.txt"
 recipe_id = -1
