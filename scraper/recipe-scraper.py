@@ -8,8 +8,8 @@ from recipe_scrapers import scrape_me
 from uploader import Uploader
 from walmart_scraper import WalmartScraper, GroceryItem
 
-start_id = 1_020_000
-end_id = 1_030_000
+start_id = 9
+end_id = int(1e6 - 1)
 parsed_recipes = []
 parsed_recipes_file = "parsed.txt"
 recipe_id = -1
@@ -76,7 +76,7 @@ def parse_ingredients(ingredients):
         else:
             amount = standardize(i["quantity"], i["measure"])
         parsed_ingredients[i["foodMatch"]] = {
-            "quantity": float(amount[0]),
+            "quantity": None if amount[0] is None else float(amount[0]),
             "unit": "mL" if amount[1] == "ml" else amount[1],
             "calories": i["nutrients"]["ENERC_KCAL"]["quantity"],
             "price": item.price,
