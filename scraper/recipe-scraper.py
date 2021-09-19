@@ -8,8 +8,8 @@ from recipe_scrapers import scrape_me
 from uploader import Uploader
 from walmart_scraper import WalmartScraper, GroceryItem
 
-start_id = 500
-end_id = int(1e6 - 1)
+start_id = 1_020_000
+end_id = 1_030_000
 parsed_recipes = []
 parsed_recipes_file = "parsed.txt"
 recipe_id = -1
@@ -102,7 +102,7 @@ def convert_to_json(scraper):
         "ingredients": parse_ingredients(ingredients_details),
         "steps": scraper.instructions(),
         "yield": int(scraper.yields().split(" ")[0]),
-        "source": "https://www.allrecipes.com/recipe/" + str(recipe_id),
+        "source": "https://cooking.nytimes.com/recipes/" + str(recipe_id),
         "nutrients": scraper.nutrients(),
         "vegan": "VEGAN" in ingredients_details["healthLabels"],
         "vegetarian": "VEGETARIAN" in ingredients_details["healthLabels"],
@@ -122,7 +122,7 @@ if __name__ == "__main__":
     while 1:
         recipe_id = random.randint(start_id, end_id)
         if recipe_id not in parsed_recipes:
-            scraper = scrape_me("https://www.allrecipes.com/recipe/" + str(recipe_id))
+            scraper = scrape_me("https://cooking.nytimes.com/recipes/" + str(recipe_id))
             # runs a check to see if the page is not empty
             try:
                 if scraper.title() is None:
@@ -130,7 +130,7 @@ if __name__ == "__main__":
             except TypeError:
                 print("Skipping")
                 continue
-            print("Recipe found " + str(recipe_id))
+            print("Recipe found " + str(recipe_id), scraper.title())
 
             data = convert_to_json(scraper)
             parsed_recipes.append(recipe_id)

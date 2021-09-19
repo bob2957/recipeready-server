@@ -17,7 +17,7 @@ CONVERTER = {
     "ingredients": lambda i: dbstr(json.dumps(i)),
     "yield": str,
     "imglink": dbstr,
-    "steps": dbstr,
+    "steps": lambda i: dbstr(list(i)),
     "source": dbstr,
     #"nutrients": lambda i: dbstr(json.dumps(i)), NOT IMPLEMENTED
 }
