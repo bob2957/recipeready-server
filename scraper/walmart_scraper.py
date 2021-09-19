@@ -68,7 +68,7 @@ class WalmartScraper():
         groceries = []
         for i in results:
             # cents vs dollars
-            if i["price"]:
+            if "price" in i:
                 processed_price = float(i["price"][1:]) if "$" in i["price"] else (float(i["price"][:-1]) / 100)
             else:
                 processed_price = 0.0
